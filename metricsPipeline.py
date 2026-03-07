@@ -530,7 +530,7 @@ def run_metrics_pipeline(input_csv="Cog_96_12.csv", maven_home=None, enable_wait
         # ==========================================
         print("\n  [STEP 1] Generating Branch Coverage test with LLM...")
         if enable_wait:
-            wait_time = random.randint(100,250 )  # 2-5 minutes
+            wait_time = random.randint(50,200 )  # 2-5 minutes
             print(f"    Waiting {wait_time} seconds ({wait_time//60} min {wait_time%60} sec)...")
             time.sleep(wait_time)
         
