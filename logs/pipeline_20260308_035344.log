@@ -1,0 +1,253 @@
+[0;32m============================================================[0m
+[0;32m         Research Pipeline - JUnit Test Coverage[0m
+[0;32m============================================================[0m
+Pipeline started at: Sun Mar  8 03:53:44 UTC 2026
+Log file: /app/logs/pipeline_20260308_035344.log
+
+[1;33mStarting metrics pipeline...[0m
+----------------------------------------
+======================================================================
+METRICS PIPELINE - JUnit Generation + Branch Coverage Analysis
+======================================================================
+Input file: Cog_96_12.csv
+Output files: coverage_results.csv, coverage_summary.csv
+Found 15 methods to process.
+Will generate 15 tests and run 15 coverage analyses.
+
+Found Maven: /usr/bin/mvn
+✓ Project structure created at test_project_metrics
+
+============================================================
+[1/15] Processing: CanStackBlocksToMySQL
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 106 seconds (1 min 46 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: CanStackBlocksToMySQL_BranchCov
+  ✓ Test passed: CanStackBlocksToMySQL_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[2/15] Processing: Out
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 190 seconds (3 min 10 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: Out_BranchCov
+  ✓ Test passed: Out_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[3/15] Processing: IsLetter
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 179 seconds (2 min 59 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: IsLetter_BranchCov
+  ✓ Test passed: IsLetter_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[4/15] Processing: CommonHalfPlane
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 126 seconds (2 min 6 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: CommonHalfPlane_BranchCov
+  ✓ Test passed: CommonHalfPlane_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[5/15] Processing: ExcludeReg
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 53 seconds (0 min 53 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: ExcludeReg_BranchCov
+  ✓ Test passed: ExcludeReg_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[6/15] Processing: RenderItemIn3d
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 167 seconds (2 min 47 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: RenderItemIn3d_BranchCov
+  ✓ Test passed: RenderItemIn3d_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[7/15] Processing: CountPrimes
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 137 seconds (2 min 17 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: CountPrimes_BranchCov
+  ✓ Test passed: CountPrimes_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[8/15] Processing: SuitablePower2
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 187 seconds (3 min 7 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: SuitablePower2_BranchCov
+  ✓ Test passed: SuitablePower2_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[9/15] Processing: Power
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 186 seconds (3 min 6 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: Power_BranchCov
+  ✓ Test passed: Power_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[10/15] Processing: Direction
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 142 seconds (2 min 22 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: Direction_BranchCov
+  ✓ Test passed: Direction_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[11/15] Processing: IsAlpha
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 151 seconds (2 min 31 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: IsAlpha_BranchCov
+  ✓ Test passed: IsAlpha_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[12/15] Processing: IsBaseChar
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 116 seconds (1 min 56 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: IsBaseChar_BranchCov
+  ✓ Test passed: IsBaseChar_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[13/15] Processing: ValidateProtocolFrame
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 142 seconds (2 min 22 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: ValidateProtocolFrame_BranchCov
+  ✓ Test passed: ValidateProtocolFrame_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[14/15] Processing: AnalyzeOrbitalStability
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 79 seconds (1 min 19 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: AnalyzeOrbitalStability_BranchCov
+  ✓ Test passed: AnalyzeOrbitalStability_BranchCov
+    ✓ Branch Coverage test passed
+
+============================================================
+[15/15] Processing: ComputeRiskScore
+============================================================
+
+  [STEP 1] Generating Branch Coverage test with LLM...
+    Waiting 132 seconds (2 min 12 sec)...
+    [Service Tier: flex]
+    ✓ Branch Coverage test generated.
+
+  [STEP 2] Running Branch Coverage test...
+  Running test: ComputeRiskScore_BranchCov
+  ✓ Test passed: ComputeRiskScore_BranchCov
+    ✓ Branch Coverage test passed
+
+======================================================================
+PIPELINE RESULTS SUMMARY
+======================================================================
+
+Branch Coverage Tests: 15/15 passed (100.0%)
+Average Branch Coverage: 97.14%
+
+✓ Detailed results saved to: coverage_results.csv
+✓ Summary results saved to: coverage_summary.csv
+----------------------------------------
+Pipeline finished at: Sun Mar  8 04:39:43 UTC 2026
+Exit code: 0
+
+[1;33mGit push is enabled, uploading results...[0m
+[0;32m============================================[0m
+[0;32m  Git Push - Results Upload[0m
+[0;32m============================================[0m
+[1;33mConfiguring git...[0m
+[1;33mCloning repository...[0m
+[1;33mCopying CSV files...[0m
+  [0;32m✓[0m Copied coverage_results.csv
+  [0;32m✓[0m Copied coverage_summary.csv
+[1;33mCopying log files...[0m
+  [0;32m✓[0m Copied pipeline_20260308_035344.log

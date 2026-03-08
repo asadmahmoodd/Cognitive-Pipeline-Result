@@ -1,0 +1,1879 @@
+class_under_test,test_script_branch,cyclomatic,npath,cognitive,branch_percentage,tests_run,tests_passed,tests_failed
+"public class CanStackBlocksToMySQL {
+    public boolean canStackBlocksToMySQL(int id, int blockToRestore, boolean first, int data, int newBlockData) {
+            if (id != blockToRestore && !first)
+                return false;
+            if (// If block data is not equal
+            data != newBlockData && !first)
+                return false;
+            int[] unstackableBlocks = { 23, 29, 33, 34, 52, 54, 61, 62, 63, 64, 68, 71, 84, 93, 94, 95, 323, 324, 342, 343, 356 };
+            for (int i = 0; i < unstackableBlocks.length; i++) {
+                if (unstackableBlocks[i] == id)
+                    return false;
+            }
+            return true;
+        }
+}","import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CanStackBlocksToMySQLTest {
+
+    private final CanStackBlocksToMySQL sut = new CanStackBlocksToMySQL();
+
+    @Test
+    void testIdMismatchAndNotFirstReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(1, 2, false, 5, 5);
+        assertFalse(result);
+    }
+
+    @Test
+    void testDataMismatchAndNotFirstReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(10, 10, false, 1, 2);
+        assertFalse(result);
+    }
+
+    @Test
+    void testReturnsTrueWhenStackableAndMatches() {
+        boolean result = sut.canStackBlocksToMySQL(1, 1, false, 7, 7);
+        assertTrue(result);
+    }
+
+    @Test
+    void testFirstTrueBypassesMismatchesForStackableReturnsTrue() {
+        boolean result = sut.canStackBlocksToMySQL(1, 2, true, 3, 4);
+        assertTrue(result);
+    }
+
+    @Test
+    void testFirstTrueButUnstackableReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(23, 999, true, 1, 2);
+        assertFalse(result);
+    }
+
+    @Test
+    void testUnstackableFirstElementReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(23, 23, false, 0, 0);
+        assertFalse(result);
+    }
+
+    @Test
+    void testUnstackableMiddleElementReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(62, 62, false, 0, 0);
+        assertFalse(result);
+    }
+
+    @Test
+    void testUnstackableLastElementReturnsFalse() {
+        boolean result = sut.canStackBlocksToMySQL(356, 356, false, 0, 0);
+        assertFalse(result);
+    }
+}",7,15,7,100.0,8,8,0
+"public class Out {
+    public static float out(float t, float a, float p) {
+            if (t == 0) {
+                return 0;
+            }
+            if (t >= 1) {
+                return 1;
+            }
+            if (p == 0) {
+                p = 0.3f;
+            }
+            float s;
+            if (a == 0 || a < 1) {
+                a = 1;
+                s = p / 4;
+            } else {
+                s = (float) (p / (2 * Math.PI) * Math.asin(1 / a));
+            }
+            return (float) (a * Math.pow(2, -10 * t) * Math.sin((t - s) * (2 * Math.PI) / p) + 1);
+        }
+}","import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+public class OutTest {
+
+    private final Out sut = new Out();
+
+    @Test
+    void returnsZeroWhenTIsZero() {
+        float result = sut.out(0.0f, 2.0f, 0.1f);
+        assertEquals(0.0f, result, 0.0f);
+    }
+
+    @Test
+    void returnsOneWhenTAtLeastOne() {
+        float result = sut.out(1.0f, 0.5f, 0.0f);
+        assertEquals(1.0f, result, 0.0f);
+    }
+
+    @Test
+    void pZeroAndAZero_usesDefaultP_andALessThanOneBranch() {
+        float t = 0.3f / 2.0f; // align with internal default p=0.3f to make (t - p/4) ≈ p/4
+        float result = sut.out(t, 0.0f, 0.0f);
+        float expected = (float) (Math.pow(2.0, -10.0 * t) + 1.0);
+        assertEquals(expected, result, 1e-5f);
+    }
+
+    @Test
+    void pNonZeroAndALessThanOne_branch() {
+        float t = 0.25f;
+        float result = sut.out(t, 0.5f, 0.5f);
+        float expected = (float) (Math.pow(2.0, -10.0 * t) + 1.0); // sin((t - p/4)*2π/p) ≈ 1
+        assertEquals(expected, result, 1e-6f);
+    }
+
+    @Test
+    void pNonZeroAndAGreaterThanOne_branch() {
+        float t = 1.0f / 6.0f;
+        float result = sut.out(t, 2.0f, 0.5f);
+        float expected = (float) (2.0 * Math.pow(2.0, -10.0 * t) + 1.0); // sin(...) ≈ 1
+        assertEquals(expected, result, 1e-6f);
+    }
+
+    @Test
+    void pZeroAndAGreaterThanOne_branch() {
+        float pDefault = 0.3f; // internal default when p == 0
+        float t = pDefault / 3.0f; // ensures (t - s) ≈ p/4 with a=2 (s = p/12)
+        float result = sut.out(t, 2.0f, 0.0f);
+        float expected = (float) (2.0 * Math.pow(2.0, -10.0 * t) + 1.0); // sin(...) ≈ 1
+        assertEquals(expected, result, 1e-5f);
+    }
+
+    @Test
+    void aEqualsOne_yieldsSinZeroWhenTEqualsS() {
+        float t = 0.125f; // with p=0.5 and a=1, s = p/4 = 0.125
+        float result = sut.out(t, 1.0f, 0.5f);
+        assertEquals(1.0f, result, 1e-6f);
+    }
+}",6,8,6,100.0,7,7,0
+"public class IsLetter {
+    public static boolean isLetter(char c) {
+            if (c == '$' || c == '_' || c == '@') {
+                return true;
+            }
+            if (c >= 'a' && c <= 'z') {
+                return true;
+            }
+            if (c >= 'A' && c <= 'Z') {
+                return true;
+            }
+            return false;
+        }
+}","import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class IsLetterTest {
+
+    private final IsLetter checker = new IsLetter();
+
+    @Test
+    void testSpecialCharactersAreLetters() {
+        assertTrue(checker.isLetter('$'));
+        assertTrue(checker.isLetter('_'));
+        assertTrue(checker.isLetter('@'));
+    }
+
+    @Test
+    void testLowercaseLettersReturnTrue() {
+        assertTrue(checker.isLetter('a'));
+        assertTrue(checker.isLetter('z'));
+        assertTrue(checker.isLetter('m'));
+    }
+
+    @Test
+    void testUppercaseLettersReturnTrue() {
+        assertTrue(checker.isLetter('A'));
+        assertTrue(checker.isLetter('Z'));
+        assertTrue(checker.isLetter('M'));
+    }
+
+    @Test
+    void testNonLettersReturnFalse() {
+        assertFalse(checker.isLetter('0'));
+        assertFalse(checker.isLetter('#'));
+        assertFalse(checker.isLetter('!'));
+    }
+
+    @Test
+    void testBoundaryAroundLowercaseRangeReturnFalse() {
+        assertFalse(checker.isLetter('`')); // just before 'a'
+        assertFalse(checker.isLetter('{')); // just after 'z'
+    }
+
+    @Test
+    void testBoundaryAroundUppercaseRangeReturnFalse() {
+        assertFalse(checker.isLetter('[')); // just after 'Z'
+    }
+}",8,10,6,100.0,6,6,0
+"public class CommonHalfPlane {
+    public static int commonHalfPlane(int quad1, int quad2) {
+            // if quadrants are the same they do not determine a unique common halfplane.
+            // Simply return one of the two possibilities
+            if (quad1 == quad2)
+                return quad1;
+            int diff = (quad1 - quad2 + 4) % 4;
+            // if quadrants are not adjacent, they do not share a common halfplane
+            if (diff == 2)
+                return -1;
+            //
+            int min = (quad1 < quad2) ? quad1 : quad2;
+            int max = (quad1 > quad2) ? quad1 : quad2;
+            // for this one case, the righthand plane is NOT the minimum index;
+            if (min == 0 && max == 3)
+                return 3;
+            // in general, the halfplane index is the minimum of the two adjacent quadrants
+            return min;
+        }
+}","import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CommonHalfPlaneTest {
+
+    private final CommonHalfPlane sut = new CommonHalfPlane();
+
+    @Test
+    void sameQuadrantReturnsSame() {
+        assertEquals(2, sut.commonHalfPlane(2, 2));
+    }
+
+    @Test
+    void oppositeQuadrants0and2ReturnMinusOne() {
+        assertEquals(-1, sut.commonHalfPlane(0, 2));
+    }
+
+    @Test
+    void oppositeQuadrants3and1ReturnMinusOne() {
+        assertEquals(-1, sut.commonHalfPlane(3, 1));
+    }
+
+    @Test
+    void adjacentMinWhenQuad1Less() {
+        assertEquals(1, sut.commonHalfPlane(1, 2));
+    }
+
+    @Test
+    void adjacentMinWhenQuad1Greater() {
+        assertEquals(1, sut.commonHalfPlane(2, 1));
+    }
+
+    @Test
+    void specialCaseZeroAndThreeOrder03() {
+        assertEquals(3, sut.commonHalfPlane(0, 3));
+    }
+
+    @Test
+    void specialCaseZeroAndThreeOrder30() {
+        assertEquals(3, sut.commonHalfPlane(3, 0));
+    }
+
+    @Test
+    void adjacentWithMinZeroButNotMaxThree() {
+        assertEquals(0, sut.commonHalfPlane(0, 1));
+    }
+
+    @Test
+    void adjacentTwoAndThree() {
+        assertEquals(2, sut.commonHalfPlane(2, 3));
+    }
+
+    @Test
+    void adjacentThreeAndTwo() {
+        assertEquals(2, sut.commonHalfPlane(3, 2));
+    }
+}",7,14,6,100.0,10,10,0
+"public class ExcludeReg {
+    public static boolean excludeReg(int reg) {
+            // These registers are used by the yellow pekoe assembler
+            if (reg == 14)
+                return true;
+            if (reg == 15)
+                return true;
+            if (reg == 24)
+                return true;
+            if (reg == 25)
+                return true;
+            // These are the kernel registers
+            if (reg == 26)
+                return true;
+            if (reg == 27)
+                return true;
+            // We exlude the GP since the C code we call into assumes GP has
+            // a proper value
+            // GP, SP, FP, LR
+            if (reg == 28)
+                return true;
+            if (reg == 29)
+                return true;
+            if (reg == 30)
+                return true;
+            if (reg == 31)
+                return true;
+            return false;
+        }
+}","import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class ExcludeRegTest {
+
+    private final ExcludeReg sut = new ExcludeReg();
+
+    @Test
+    void includedRegistersReturnTrue() {
+        assertTrue(sut.excludeReg(14));
+        assertTrue(sut.excludeReg(15));
+        assertTrue(sut.excludeReg(24));
+        assertTrue(sut.excludeReg(25));
+        assertTrue(sut.excludeReg(26));
+        assertTrue(sut.excludeReg(27));
+        assertTrue(sut.excludeReg(28));
+        assertTrue(sut.excludeReg(29));
+        assertTrue(sut.excludeReg(30));
+        assertTrue(sut.excludeReg(31));
+    }
+
+    @Test
+    void nonIncludedRegistersReturnFalse() {
+        assertFalse(sut.excludeReg(-10));
+        assertFalse(sut.excludeReg(-1));
+        assertFalse(sut.excludeReg(0));
+        assertFalse(sut.excludeReg(1));
+        assertFalse(sut.excludeReg(13));
+        assertFalse(sut.excludeReg(16));
+        assertFalse(sut.excludeReg(23));
+        assertFalse(sut.excludeReg(32));
+        assertFalse(sut.excludeReg(100));
+    }
+}",11,11,10,100.0,2,2,0
+"public class RenderItemIn3d {
+    public static boolean renderItemIn3d(int i) {
+            if (i == 0) {
+                return true;
+            }
+            if (i == 13) {
+                return true;
+            }
+            if (i == 10) {
+                return true;
+            }
+            if (i == 11) {
+                return true;
+            }
+            if (i == 22) {
+                return true;
+            }
+            if (i == 21) {
+                return true;
+            }
+            return i == 16;
+        }
+}","import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class RenderItemIn3dTest {
+
+    private final RenderItemIn3d renderer = new RenderItemIn3d();
+
+    @Test
+    void returnsTrueWhenInputIs0() {
+        assertTrue(renderer.renderItemIn3d(0));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs13() {
+        assertTrue(renderer.renderItemIn3d(13));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs10() {
+        assertTrue(renderer.renderItemIn3d(10));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs11() {
+        assertTrue(renderer.renderItemIn3d(11));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs22() {
+        assertTrue(renderer.renderItemIn3d(22));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs21() {
+        assertTrue(renderer.renderItemIn3d(21));
+    }
+
+    @Test
+    void returnsTrueWhenInputIs16() {
+        assertTrue(renderer.renderItemIn3d(16));
+    }
+
+    @Test
+    void returnsFalseForNonMatchingValue() {
+        assertFalse(renderer.renderItemIn3d(5));
+    }
+}",7,7,6,100.0,8,8,0
+"public class CountPrimes {
+    public int countPrimes(int n) {
+            boolean[] notPrime = new boolean[n];
+            int count = 0;
+            for (int i = 2; i < n; i++) {
+                if (!notPrime[i]) {
+                    count++;
+                    for (int j = 2; i * j < n; j++) {
+                        notPrime[i * j] = true;
+                    }
+                }
+            }
+            return count;
+        }
+}","import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class CountPrimesTest {
+
+    private final CountPrimes counter = new CountPrimes();
+
+    @Test
+    void testNegativeNThrowsException() {
+        assertThrows(NegativeArraySizeException.class, () -> counter.countPrimes(-1));
+    }
+
+    @Test
+    void testNEquals2_OuterLoopZeroIterations() {
+        assertEquals(0, counter.countPrimes(2));
+    }
+
+    @Test
+    void testNEquals3_OuterLoopOneIteration_InnerLoopZeroIterations() {
+        assertEquals(1, counter.countPrimes(3));
+    }
+
+    @Test
+    void testNEquals6_IfFalseBranchAndInnerLoopOneIteration() {
+        assertEquals(3, counter.countPrimes(6));
+    }
+
+    @Test
+    void testNEquals20_MultipleIterationsInnerLoop() {
+        assertEquals(8, counter.countPrimes(20));
+    }
+}",4,4,6,100.0,5,5,0
+"public class SuitablePower2 {
+    public static int suitablePower2(int s) {
+            //		return 128;
+            if (s > 380)
+                return 512;
+            else if (s > 192)
+                return 256;
+            else if (s > 96)
+                return 128;
+            else if (s > 48)
+                return 64;
+            else if (s > 24)
+                return 32;
+            else if (s > 12)
+                return 16;
+            else if (s > 6)
+                return 8;
+            else
+                return 4;
+        }
+}","import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class SuitablePower2Test {
+
+    private final SuitablePower2 sut = new SuitablePower2();
+
+    @Test
+    void returns512_whenGreaterThan380() {
+        assertEquals(512, sut.suitablePower2(381));
+        assertEquals(512, sut.suitablePower2(1000));
+    }
+
+    @Test
+    void returns256_whenExactly380_orBetween193And380() {
+        assertEquals(256, sut.suitablePower2(380));
+        assertEquals(256, sut.suitablePower2(193));
+        assertEquals(256, sut.suitablePower2(379));
+    }
+
+    @Test
+    void returns128_whenExactly192_orBetween97And192() {
+        assertEquals(128, sut.suitablePower2(192));
+        assertEquals(128, sut.suitablePower2(97));
+        assertEquals(128, sut.suitablePower2(150));
+    }
+
+    @Test
+    void returns64_whenExactly96_orBetween49And96() {
+        assertEquals(64, sut.suitablePower2(96));
+        assertEquals(64, sut.suitablePower2(49));
+        assertEquals(64, sut.suitablePower2(60));
+    }
+
+    @Test
+    void returns32_whenExactly48_orBetween25And48() {
+        assertEquals(32, sut.suitablePower2(48));
+        assertEquals(32, sut.suitablePower2(25));
+        assertEquals(32, sut.suitablePower2(30));
+    }
+
+    @Test
+    void returns16_whenExactly24_orBetween13And24() {
+        assertEquals(16, sut.suitablePower2(24));
+        assertEquals(16, sut.suitablePower2(13));
+        assertEquals(16, sut.suitablePower2(20));
+    }
+
+    @Test
+    void returns8_whenExactly12_orBetween7And12() {
+        assertEquals(8, sut.suitablePower2(12));
+        assertEquals(8, sut.suitablePower2(7));
+        assertEquals(8, sut.suitablePower2(9));
+    }
+
+    @Test
+    void returns4_whenExactly6_orBelowOrEqual6() {
+        assertEquals(4, sut.suitablePower2(6));
+        assertEquals(4, sut.suitablePower2(0));
+        assertEquals(4, sut.suitablePower2(-5));
+        assertEquals(4, sut.suitablePower2(1));
+    }
+}",8,8,8,100.0,8,8,0
+"public class Power {
+    public double power(double x, int n) {
+            switch(n) {
+                case 0:
+                    x = 1.0;
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    x *= x;
+                    break;
+                case 3:
+                    x *= x * x;
+                    break;
+                case 4:
+                    x *= x * x * x;
+                    break;
+                case 5:
+                    x *= x * x * x * x;
+                    break;
+                case 6:
+                    x *= x * x * x * x * x;
+                    break;
+                case 7:
+                    x *= x * x * x * x * x * x;
+                    break;
+                case 8:
+                    x *= x * x * x * x * x * x * x;
+                    break;
+                default:
+                    {
+                        int bitMask = n;
+                        double evenPower = x;
+                        double result;
+                        if ((bitMask & 1) != 0)
+                            result = x;
+                        else
+                            result = 1;
+                        bitMask >>>= 1;
+                        while (bitMask != 0) {
+                            evenPower *= evenPower;
+                            if ((bitMask & 1) != 0)
+                                result *= evenPower;
+                            bitMask >>>= 1;
+                        }
+                        // end while
+                        x = result;
+                    }
+            }
+            return x;
+        }
+}","import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+public class PowerTest {
+
+    private final Power power = new Power();
+
+    @Test
+    void testCaseN0ReturnsOneRegardlessOfX() {
+        double actual = power.power(Double.NaN, 0);
+        assertEquals(1.0, actual, 0.0);
+    }
+
+    @Test
+    void testCaseN1ReturnsXUnchanged() {
+        double x = -3.5;
+        double actual = power.power(x, 1);
+        assertEquals(x, actual, 0.0);
+    }
+
+    @Test
+    void testCaseN2Square() {
+        double actual = power.power(2.0, 2);
+        assertEquals(Math.pow(2.0, 2), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN3CubeWithNegativeBase() {
+        double actual = power.power(-2.0, 3);
+        assertEquals(Math.pow(-2.0, 3), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN4FourthPower() {
+        double actual = power.power(1.5, 4);
+        assertEquals(Math.pow(1.5, 4), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN5FifthPower() {
+        double actual = power.power(2.0, 5);
+        assertEquals(Math.pow(2.0, 5), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN6SixthPower() {
+        double actual = power.power(2.0, 6);
+        assertEquals(Math.pow(2.0, 6), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN7SeventhPower() {
+        double actual = power.power(2.0, 7);
+        assertEquals(Math.pow(2.0, 7), actual, 1e-12);
+    }
+
+    @Test
+    void testCaseN8EighthPower() {
+        double actual = power.power(2.0, 8);
+        assertEquals(Math.pow(2.0, 8), actual, 1e-12);
+    }
+
+    @Test
+    void testDefaultOddExponentNine() {
+        double actual = power.power(2.0, 9);
+        assertEquals(Math.pow(2.0, 9), actual, 1e-12);
+    }
+
+    @Test
+    void testDefaultEvenExponentTen() {
+        double actual = power.power(3.0, 10);
+        assertEquals(Math.pow(3.0, 10), actual, 1e-12);
+    }
+
+    @Test
+    void testDefaultNegativeExponentOverflowToInfinity() {
+        double actual = power.power(2.0, -1);
+        assertTrue(Double.isInfinite(actual));
+    }
+
+    @Test
+    void testDefaultNegativeExponentUnderflowToZero() {
+        double actual = power.power(0.5, -1);
+        assertEquals(0.0, actual, 0.0);
+    }
+}",13,15,9,100.0,13,13,0
+"public class Direction {
+    public static int direction(int srcX, int srcY, int destX, int destY) {
+            int dx = destX - srcX, dy = destY - srcY;
+            // a lot of cases that have to be considered here ... is there a more
+            // sophisticated (and quick!) way?
+            if (dx < 0) {
+                if (dy < 0) {
+                    if (dx < dy)
+                        return 11;
+                    else if (dx > dy)
+                        return 9;
+                    else
+                        // dx == dy
+                        return 10;
+                } else if (dy > 0) {
+                    if (-dx < dy)
+                        return 15;
+                    else if (-dx > dy)
+                        return 13;
+                    else
+                        // -dx == dy
+                        return 14;
+                } else {
+                    // dy == 0
+                    return 12;
+                }
+            } else if (dx > 0) {
+                if (dy < 0) {
+                    if (dx < -dy)
+                        return 7;
+                    else if (dx > -dy)
+                        return 5;
+                    else
+                        // dx == -dy
+                        return 6;
+                } else if (dy > 0) {
+                    if (dx < dy)
+                        return 1;
+                    else if (dx > dy)
+                        return 3;
+                    else
+                        // dx == dy
+                        return 2;
+                } else {
+                    // dy == 0
+                    return 4;
+                }
+            } else {
+                // dx == 0
+                if (dy < 0) {
+                    return 8;
+                } else if (dy > 0) {
+                    return 0;
+                } else {
+                    // dy == 0
+                    // src and dest are the same
+                    return -1;
+                }
+            }
+        }
+}","import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+public class DirectionTest {
+
+    private final Direction directionInstance = new Direction();
+
+    @Test
+    void returns1_whenDxGt0DyGt0_andDxLessThanDy() {
+        assertEquals(1, directionInstance.direction(0, 0, 1, 5));
+    }
+
+    @Test
+    void returns2_whenDxGt0DyGt0_andDxEqualsDy() {
+        assertEquals(2, directionInstance.direction(0, 0, 3, 3));
+    }
+
+    @Test
+    void returns3_whenDxGt0DyGt0_andDxGreaterThanDy() {
+        assertEquals(3, directionInstance.direction(0, 0, 5, 1));
+    }
+
+    @Test
+    void returns4_whenDxGt0_andDyEquals0() {
+        assertEquals(4, directionInstance.direction(0, 0, 1, 0));
+    }
+
+    @Test
+    void returns5_whenDxGt0DyLt0_andDxGreaterThanNegDy() {
+        assertEquals(5, directionInstance.direction(0, 0, 5, -1));
+    }
+
+    @Test
+    void returns6_whenDxGt0DyLt0_andDxEqualsNegDy() {
+        assertEquals(6, directionInstance.direction(0, 0, 3, -3));
+    }
+
+    @Test
+    void returns7_whenDxGt0DyLt0_andDxLessThanNegDy() {
+        assertEquals(7, directionInstance.direction(0, 0, 1, -5));
+    }
+
+    @Test
+    void returns8_whenDxEquals0_andDyLt0() {
+        assertEquals(8, directionInstance.direction(0, 0, 0, -1));
+    }
+
+    @Test
+    void returns9_whenDxLt0DyLt0_andDxGreaterThanDy() {
+        assertEquals(9, directionInstance.direction(0, 0, -3, -5));
+    }
+
+    @Test
+    void returns10_whenDxLt0DyLt0_andDxEqualsDy() {
+        assertEquals(10, directionInstance.direction(0, 0, -4, -4));
+    }
+
+    @Test
+    void returns11_whenDxLt0DyLt0_andDxLessThanDy() {
+        assertEquals(11, directionInstance.direction(0, 0, -5, -3));
+    }
+
+    @Test
+    void returns12_whenDxLt0_andDyEquals0() {
+        assertEquals(12, directionInstance.direction(0, 0, -1, 0));
+    }
+
+    @Test
+    void returns13_whenDxLt0DyGt0_andNegDxGreaterThanDy() {
+        assertEquals(13, directionInstance.direction(0, 0, -5, 1));
+    }
+
+    @Test
+    void returns14_whenDxLt0DyGt0_andNegDxEqualsDy() {
+        assertEquals(14, directionInstance.direction(0, 0, -3, 3));
+    }
+
+    @Test
+    void returns15_whenDxLt0DyGt0_andNegDxLessThanDy() {
+        assertEquals(15, directionInstance.direction(0, 0, -1, 5));
+    }
+
+    @Test
+    void returns0_whenDxEquals0_andDyGt0() {
+        assertEquals(0, directionInstance.direction(0, 0, 0, 1));
+    }
+
+    @Test
+    void returnsMinus1_whenSrcEqualsDest() {
+        assertEquals(-1, directionInstance.direction(0, 0, 0, 0));
+    }
+}",17,17,36,100.0,17,17,0
+"public class IsAlpha {
+    public static boolean isAlpha(char c) {
+            // ""$"", // for absolute references in the spreadsheet
+            if (c >= 'a' && c <= 'z') {
+                return true;
+            } else if (c >= 'A' && c <= 'Z') {
+                return true;
+            } else if (c == '\'') {
+                return true;
+            } else if (c == '?') {
+                return true;
+            } else if (c == 0x00b7) {
+                // middle dot (for Catalan).
+                return true;
+            } else if (c == 0x00b0) {
+                // degree symbol).
+                return true;
+            } else if (c >= 0x00c0 && c <= 0x00d6) {
+                //accentuated letters.
+                return true;
+            } else if (c >= 0x00d8 && c <= 0x01bf) {
+                //accentuated letters.
+                return true;
+            } else if (c >= 0x01c4 && c <= 0x02a8) {
+                //accentuated letters.
+                return true;
+            } else if (c >= 0x0391 && c <= 0x03f3) {
+                // Greek.
+                return true;
+            } else if (c >= 0x0401 && c <= 0x0481) {
+                // Cyrillic.
+                return true;
+            } else if (c >= 0x0490 && c <= 0x04f9) {
+                // Cyrillic.
+                return true;
+            } else if (c >= 0x0531 && c <= 0x1ffc) {
+                // a lot of signs (Arabic, accentuated, ...).
+                return true;
+            } else if (c >= 0x3041 && c <= 0x3357) {
+                // Asian letters.
+                return true;
+            } else if (c >= 0x4e00 && c <= 0xd7a3) {
+                // Asian letters.
+                return true;
+            } else if (c >= 0xf71d && c <= 0xfa2d) {
+                // Asian letters.
+                return true;
+            } else if (c >= 0xfb13 && c <= 0xfdfb) {
+                // Armenian, Hebrew, Arabic.
+                return true;
+            } else if (c >= 0xfe80 && c <= 0xfefc) {
+                // Arabic.
+                return true;
+            } else if (c >= 0xff66 && c <= 0xff9d) {
+                // Katakana.
+                return true;
+            } else if (c >= 0xffa1 && c <= 0xffdc) {
+                // Hangul.
+                return true;
+            }
+            return false;
+            //return ( (c>='a' && c<='z') || (c>='A' && c<='Z') || (c == '\'') || unicodeVariableChars.indexOf(c) != -1);
+        }
+}","import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+public class IsAlphaTest {
+
+    private final IsAlpha sut = new IsAlpha();
+
+    @Test
+    void testNonAlphaReturnsFalse() {
+        assertFalse(sut.isAlpha('\u0000'));
+    }
+
+    @Test
+    void testLowercaseLetterReturnsTrue() {
+        assertTrue(sut.isAlpha('a'));
+    }
+
+    @Test
+    void testUppercaseLetterReturnsTrue() {
+        assertTrue(sut.isAlpha('Z'));
+    }
+
+    @Test
+    void testApostropheReturnsTrue() {
+        assertTrue(sut.isAlpha('\''));
+    }
+
+    @Test
+    void testQuestionMarkReturnsTrue() {
+        assertTrue(sut.isAlpha('?'));
+    }
+
+    @Test
+    void testMiddleDotReturnsTrue() {
+        assertTrue(sut.isAlpha('\u00b7'));
+    }
+
+    @Test
+    void testDegreeSymbolReturnsTrue() {
+        assertTrue(sut.isAlpha('\u00b0'));
+    }
+
+    @Test
+    void testRange00C0To00D6ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u00c0'));
+    }
+
+    @Test
+    void testRange00D8To01BFReturnsTrue() {
+        assertTrue(sut.isAlpha('\u00d8'));
+    }
+
+    @Test
+    void testRange01C4To02A8ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u01c4'));
+    }
+
+    @Test
+    void testGreek0391To03F3ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u0391'));
+    }
+
+    @Test
+    void testCyrillic0401To0481ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u0401'));
+    }
+
+    @Test
+    void testCyrillic0490To04F9ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u0490'));
+    }
+
+    @Test
+    void testRange0531To1FFCReturnsTrue() {
+        assertTrue(sut.isAlpha('\u0531'));
+    }
+
+    @Test
+    void testAsianLetters3041To3357ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u3041'));
+    }
+
+    @Test
+    void testCJK4E00ToD7A3ReturnsTrue() {
+        assertTrue(sut.isAlpha('\u4e00'));
+    }
+
+    @Test
+    void testAsianLettersF71DToFA2DReturnsTrue() {
+        assertTrue(sut.isAlpha('\uf71d'));
+    }
+
+    @Test
+    void testArmenianHebrewArabicFB13ToFDFBReturnsTrue() {
+        assertTrue(sut.isAlpha('\ufb13'));
+    }
+
+    @Test
+    void testArabicFE80ToFEFCReturnsTrue() {
+        assertTrue(sut.isAlpha('\ufe80'));
+    }
+
+    @Test
+    void testKatakanaFF66ToFF9DReturnsTrue() {
+        assertTrue(sut.isAlpha('\uff66'));
+    }
+
+    @Test
+    void testHangulFFA1ToFFDCReturnsTrue() {
+        assertTrue(sut.isAlpha('\uffa1'));
+    }
+}",37,131087,36,98.61,21,21,0
+"public class IsBaseChar {
+    public static boolean isBaseChar(int ch) {
+            return (ch <= 0xff && (ch >= 0x0041 && ch <= 0x005A || ch >= 0x0061 && ch <= 0x007A || ch >= 0x00C0 && ch <= 0x00D6 || ch >= 0x00D8 && ch <= 0x00F6 || ch >= 0x00F8 && ch <= 0x00FF) || ch <= 0x1f5 && (ch >= 0x0100 && ch <= 0x0131 || ch >= 0x0134 && ch <= 0x013E || ch >= 0x0141 && ch <= 0x0148 || ch >= 0x014A && ch <= 0x017E || ch >= 0x0180 && ch <= 0x01C3 || ch >= 0x01CD && ch <= 0x01F0 || ch >= 0x01F4 && ch <= 0x01F5) || ch <= 0x2ff && (ch >= 0x01FA && ch <= 0x0217 || ch >= 0x0250 && ch <= 0x02A8 || ch >= 0x02BB && ch <= 0x02C1) || ch <= 0x3ff && (ch == 0x0386 || ch >= 0x0388 && ch <= 0x038A || ch == 0x038C || ch >= 0x038E && ch <= 0x03A1 || ch >= 0x03A3 && ch <= 0x03CE || ch >= 0x03D0 && ch <= 0x03D6 || ch == 0x03DA || ch == 0x03DC || ch == 0x03DE || ch == 0x03E0 || ch >= 0x03E2 && ch <= 0x03F3) || ch <= 0x4ff && (ch >= 0x0401 && ch <= 0x040C || ch >= 0x040E && ch <= 0x044F || ch >= 0x0451 && ch <= 0x045C || ch >= 0x045E && ch <= 0x0481 || ch >= 0x0490 && ch <= 0x04C4 || ch >= 0x04C7 && ch <= 0x04C8 || ch >= 0x04CB && ch <= 0x04CC || ch >= 0x04D0 && ch <= 0x04EB || ch >= 0x04EE && ch <= 0x04F5 || ch >= 0x04F8 && ch <= 0x04F9) || ch <= 0x5ff && (ch >= 0x0531 && ch <= 0x0556 || ch == 0x0559 || ch >= 0x0561 && ch <= 0x0586 || ch >= 0x05D0 && ch <= 0x05EA || ch >= 0x05F0 && ch <= 0x05F2) || ch <= 0x6ff && (ch >= 0x0621 && ch <= 0x063A || ch >= 0x0641 && ch <= 0x064A || ch >= 0x0671 && ch <= 0x06B7 || ch >= 0x06BA && ch <= 0x06BE || ch >= 0x06C0 && ch <= 0x06CE || ch >= 0x06D0 && ch <= 0x06D3 || ch == 0x06D5 || ch >= 0x06E5 && ch <= 0x06E6) || ch <= 0x9ff && (ch >= 0x0905 && ch <= 0x0939 || ch == 0x093D || ch >= 0x0958 && ch <= 0x0961 || ch >= 0x0985 && ch <= 0x098C || ch >= 0x098F && ch <= 0x0990 || ch >= 0x0993 && ch <= 0x09A8 || ch >= 0x09AA && ch <= 0x09B0 || ch == 0x09B2 || ch >= 0x09B6 && ch <= 0x09B9 || ch >= 0x09DC && ch <= 0x09DD || ch >= 0x09DF && ch <= 0x09E1 || ch >= 0x09F0 && ch <= 0x09F1) || ch <= 0xaff && (ch >= 0x0A05 && ch <= 0x0A0A || ch >= 0x0A0F && ch <= 0x0A10 || ch >= 0x0A13 && ch <= 0x0A28 || ch >= 0x0A2A && ch <= 0x0A30 || ch >= 0x0A32 && ch <= 0x0A33 || ch >= 0x0A35 && ch <= 0x0A36 || ch >= 0x0A38 && ch <= 0x0A39 || ch >= 0x0A59 && ch <= 0x0A5C || ch == 0x0A5E || ch >= 0x0A72 && ch <= 0x0A74 || ch >= 0x0A85 && ch <= 0x0A8B || ch == 0x0A8D || ch >= 0x0A8F && ch <= 0x0A91 || ch >= 0x0A93 && ch <= 0x0AA8 || ch >= 0x0AAA && ch <= 0x0AB0 || ch >= 0x0AB2 && ch <= 0x0AB3 || ch >= 0x0AB5 && ch <= 0x0AB9 || ch == 0x0ABD || ch == 0x0AE0) || ch <= 0xbff && (ch >= 0x0B05 && ch <= 0x0B0C || ch >= 0x0B0F && ch <= 0x0B10 || ch >= 0x0B13 && ch <= 0x0B28 || ch >= 0x0B2A && ch <= 0x0B30 || ch >= 0x0B32 && ch <= 0x0B33 || ch >= 0x0B36 && ch <= 0x0B39 || ch == 0x0B3D || ch >= 0x0B5C && ch <= 0x0B5D || ch >= 0x0B5F && ch <= 0x0B61 || ch >= 0x0B85 && ch <= 0x0B8A || ch >= 0x0B8E && ch <= 0x0B90 || ch >= 0x0B92 && ch <= 0x0B95 || ch >= 0x0B99 && ch <= 0x0B9A || ch == 0x0B9C || ch >= 0x0B9E && ch <= 0x0B9F || ch >= 0x0BA3 && ch <= 0x0BA4 || ch >= 0x0BA8 && ch <= 0x0BAA || ch >= 0x0BAE && ch <= 0x0BB5 || ch >= 0x0BB7 && ch <= 0x0BB9) || ch <= 0xcff && (ch >= 0x0C05 && ch <= 0x0C0C || ch >= 0x0C0E && ch <= 0x0C10 || ch >= 0x0C12 && ch <= 0x0C28 || ch >= 0x0C2A && ch <= 0x0C33 || ch >= 0x0C35 && ch <= 0x0C39 || ch >= 0x0C60 && ch <= 0x0C61 || ch >= 0x0C85 && ch <= 0x0C8C || ch >= 0x0C8E && ch <= 0x0C90 || ch >= 0x0C92 && ch <= 0x0CA8 || ch >= 0x0CAA && ch <= 0x0CB3 || ch >= 0x0CB5 && ch <= 0x0CB9 || ch == 0x0CDE || ch >= 0x0CE0 && ch <= 0x0CE1) || ch <= 0xdff && (ch >= 0x0D05 && ch <= 0x0D0C || ch >= 0x0D0E && ch <= 0x0D10 || ch >= 0x0D12 && ch <= 0x0D28 || ch >= 0x0D2A && ch <= 0x0D39 || ch >= 0x0D60 && ch <= 0x0D61) || ch <= 0xfff && (ch >= 0x0E01 && ch <= 0x0E2E || ch == 0x0E30 || ch >= 0x0E32 && ch <= 0x0E33 || ch >= 0x0E40 && ch <= 0x0E45 || ch >= 0x0E81 && ch <= 0x0E82 || ch == 0x0E84 || ch >= 0x0E87 && ch <= 0x0E88 || ch == 0x0E8A || ch == 0x0E8D || ch >= 0x0E94 && ch <= 0x0E97 || ch >= 0x0E99 && ch <= 0x0E9F || ch >= 0x0EA1 && ch <= 0x0EA3 || ch == 0x0EA5 || ch == 0x0EA7 || ch >= 0x0EAA && ch <= 0x0EAB || ch >= 0x0EAD && ch <= 0x0EAE || ch == 0x0EB0 || ch >= 0x0EB2 && ch <= 0x0EB3 || ch == 0x0EBD || ch >= 0x0EC0 && ch <= 0x0EC4 || ch >= 0x0F40 && ch <= 0x0F47 || ch >= 0x0F49 && ch <= 0x0F69) || ch <= 0x10ff && (ch >= 0x10A0 && ch <= 0x10C5 || ch >= 0x10D0 && ch <= 0x10F6) || ch <= 0x11ff && (ch == 0x1100 || ch >= 0x1102 && ch <= 0x1103 || ch >= 0x1105 && ch <= 0x1107 || ch == 0x1109 || ch >= 0x110B && ch <= 0x110C || ch >= 0x110E && ch <= 0x1112 || ch == 0x113C || ch == 0x113E || ch == 0x1140 || ch == 0x114C || ch == 0x114E || ch == 0x1150 || ch >= 0x1154 && ch <= 0x1155 || ch == 0x1159 || ch >= 0x115F && ch <= 0x1161 || ch == 0x1163 || ch == 0x1165 || ch == 0x1167 || ch == 0x1169 || ch >= 0x116D && ch <= 0x116E || ch >= 0x1172 && ch <= 0x1173 || ch == 0x1175 || ch == 0x119E || ch == 0x11A8 || ch == 0x11AB || ch >= 0x11AE && ch <= 0x11AF || ch >= 0x11B7 && ch <= 0x11B8 || ch == 0x11BA || ch >= 0x11BC && ch <= 0x11C2 || ch == 0x11EB || ch == 0x11F0 || ch == 0x11F9) || ch <= 0x1fff && (ch >= 0x1E00 && ch <= 0x1E9B || ch >= 0x1EA0 && ch <= 0x1EF9 || ch >= 0x1F00 && ch <= 0x1F15 || ch >= 0x1F18 && ch <= 0x1F1D || ch >= 0x1F20 && ch <= 0x1F45 || ch >= 0x1F48 && ch <= 0x1F4D || ch >= 0x1F50 && ch <= 0x1F57 || ch == 0x1F59 || ch == 0x1F5B || ch == 0x1F5D || ch >= 0x1F5F && ch <= 0x1F7D || ch >= 0x1F80 && ch <= 0x1FB4 || ch >= 0x1FB6 && ch <= 0x1FBC || ch == 0x1FBE || ch >= 0x1FC2 && ch <= 0x1FC4 || ch >= 0x1FC6 && ch <= 0x1FCC || ch >= 0x1FD0 && ch <= 0x1FD3 || ch >= 0x1FD6 && ch <= 0x1FDB || ch >= 0x1FE0 && ch <= 0x1FEC || ch >= 0x1FF2 && ch <= 0x1FF4 || ch >= 0x1FF6 && ch <= 0x1FFC) || ch == 0x2126 || ch >= 0x212A && ch <= 0x212B || ch == 0x212E || ch >= 0x2180 && ch <= 0x2182 || ch >= 0x3041 && ch <= 0x3094 || ch >= 0x30A1 && ch <= 0x30FA || ch >= 0x3105 && ch <= 0x312C || ch >= 0xAC00 && ch <= 0xD7A3);
+        }
+}","import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.junit.jupiter.api.Test;
+
+public class IsBaseCharTest {
+
+    private final IsBaseChar baseChar = new IsBaseChar();
+
+    @Test
+    void testAsciiLettersAndFalseWithinFirstGroup() {
+        assertTrue(baseChar.isBaseChar(0x0041)); // 'A'
+        assertTrue(baseChar.isBaseChar(0x005A)); // 'Z'
+        assertTrue(baseChar.isBaseChar(0x0061)); // 'a'
+        assertTrue(baseChar.isBaseChar(0x007A)); // 'z'
+        assertFalse(baseChar.isBaseChar(0x0060)); // '`'
+        assertFalse(baseChar.isBaseChar(0x00B7)); // middle dot
+    }
+
+    @Test
+    void testLatinExtendedBoundariesInFirstGroup() {
+        assertTrue(baseChar.isBaseChar(0x00C0));
+        assertTrue(baseChar.isBaseChar(0x00D6));
+        assertFalse(baseChar.isBaseChar(0x00D7)); // gap
+        assertTrue(baseChar.isBaseChar(0x00D8));
+        assertTrue(baseChar.isBaseChar(0x00F6));
+        assertFalse(baseChar.isBaseChar(0x00F7)); // gap
+        assertTrue(baseChar.isBaseChar(0x00F8));
+        assertTrue(baseChar.isBaseChar(0x00FF));
+    }
+
+    @Test
+    void testSecondGroupExtendedALatinAndGaps() {
+        assertTrue(baseChar.isBaseChar(0x0100));
+        assertTrue(baseChar.isBaseChar(0x0131));
+        assertFalse(baseChar.isBaseChar(0x0132)); // gap between 0131 and 0134
+        assertTrue(baseChar.isBaseChar(0x0134));
+        assertTrue(baseChar.isBaseChar(0x013E));
+        assertFalse(baseChar.isBaseChar(0x0140)); // before 0141..0148
+        assertTrue(baseChar.isBaseChar(0x0141));
+        assertTrue(baseChar.isBaseChar(0x0148));
+        assertFalse(baseChar.isBaseChar(0x0149)); // gap after 0148
+        assertTrue(baseChar.isBaseChar(0x014A));
+        assertTrue(baseChar.isBaseChar(0x017E));
+        assertTrue(baseChar.isBaseChar(0x0180));
+        assertTrue(baseChar.isBaseChar(0x01C3));
+        assertTrue(baseChar.isBaseChar(0x01CD));
+        assertTrue(baseChar.isBaseChar(0x01F0));
+        assertTrue(baseChar.isBaseChar(0x01F4));
+        assertTrue(baseChar.isBaseChar(0x01F5));
+        assertFalse(baseChar.isBaseChar(0x01F6)); // outside this group's upper bound and not in next range start
+    }
+
+    @Test
+    void testThirdGroupRangesAndGaps() {
+        assertTrue(baseChar.isBaseChar(0x01FA));
+        assertTrue(baseChar.isBaseChar(0x0217));
+        assertFalse(baseChar.isBaseChar(0x0218)); // gap after 0217
+        assertTrue(baseChar.isBaseChar(0x0250));
+        assertTrue(baseChar.isBaseChar(0x02A8));
+        assertFalse(baseChar.isBaseChar(0x02A9)); // gap after 02A8
+        assertTrue(baseChar.isBaseChar(0x02BB));
+        assertTrue(baseChar.isBaseChar(0x02C1));
+        assertFalse(baseChar.isBaseChar(0x02C2)); // gap after 02C1
+    }
+
+    @Test
+    void testGreekBlockVariantsAndSingletons() {
+        assertTrue(baseChar.isBaseChar(0x0386));
+        assertTrue(baseChar.isBaseChar(0x0388));
+        assertTrue(baseChar.isBaseChar(0x038A));
+        assertFalse(baseChar.isBaseChar(0x038B)); // excluded
+        assertTrue(baseChar.isBaseChar(0x038C));
+        assertTrue(baseChar.isBaseChar(0x038E));
+        assertTrue(baseChar.isBaseChar(0x03A1));
+        assertFalse(baseChar.isBaseChar(0x03A2)); // explicitly missing
+        assertTrue(baseChar.isBaseChar(0x03A3));
+        assertTrue(baseChar.isBaseChar(0x03CE));
+        assertTrue(baseChar.isBaseChar(0x03D0));
+        assertTrue(baseChar.isBaseChar(0x03D6));
+        assertTrue(baseChar.isBaseChar(0x03DA));
+        assertTrue(baseChar.isBaseChar(0x03DC));
+        assertTrue(baseChar.isBaseChar(0x03DE));
+        assertTrue(baseChar.isBaseChar(0x03E0));
+        assertFalse(baseChar.isBaseChar(0x03E1));
+        assertTrue(baseChar.isBaseChar(0x03E2));
+        assertTrue(baseChar.isBaseChar(0x03F3));
+    }
+
+    @Test
+    void testCyrillicGroupAndGaps() {
+        assertTrue(baseChar.isBaseChar(0x0401));
+        assertTrue(baseChar.isBaseChar(0x040C));
+        assertFalse(baseChar.isBaseChar(0x040D)); // gap
+        assertTrue(baseChar.isBaseChar(0x040E));
+        assertTrue(baseChar.isBaseChar(0x044F));
+        assertTrue(baseChar.isBaseChar(0x0451));
+        assertTrue(baseChar.isBaseChar(0x045C));
+        assertFalse(baseChar.isBaseChar(0x045D)); // gap
+        assertTrue(baseChar.isBaseChar(0x045E));
+        assertTrue(baseChar.isBaseChar(0x0481));
+        assertTrue(baseChar.isBaseChar(0x0490));
+        assertTrue(baseChar.isBaseChar(0x04C4));
+        assertTrue(baseChar.isBaseChar(0x04C7));
+        assertTrue(baseChar.isBaseChar(0x04C8));
+        assertTrue(baseChar.isBaseChar(0x04CB));
+        assertTrue(baseChar.isBaseChar(0x04CC));
+        assertTrue(baseChar.isBaseChar(0x04D0));
+        assertTrue(baseChar.isBaseChar(0x04EB));
+        assertTrue(baseChar.isBaseChar(0x04EE));
+        assertTrue(baseChar.isBaseChar(0x04F5));
+        assertTrue(baseChar.isBaseChar(0x04F8));
+        assertTrue(baseChar.isBaseChar(0x04F9));
+    }
+
+    @Test
+    void testArmenianHebrewArabicAndGaps() {
+        // Armenian
+        assertTrue(baseChar.isBaseChar(0x0531));
+        assertTrue(baseChar.isBaseChar(0x0556));
+        assertFalse(baseChar.isBaseChar(0x0557)); // gap
+        assertTrue(baseChar.isBaseChar(0x0559));
+        assertTrue(baseChar.isBaseChar(0x0561));
+        assertTrue(baseChar.isBaseChar(0x0586));
+
+        // Hebrew
+        assertTrue(baseChar.isBaseChar(0x05D0));
+        assertTrue(baseChar.isBaseChar(0x05EA));
+        assertFalse(baseChar.isBaseChar(0x05EF)); // gap
+        assertTrue(baseChar.isBaseChar(0x05F0));
+        assertTrue(baseChar.isBaseChar(0x05F2));
+        assertFalse(baseChar.isBaseChar(0x05F3)); // gap
+
+        // Arabic
+        assertTrue(baseChar.isBaseChar(0x0621));
+        assertTrue(baseChar.isBaseChar(0x063A));
+        assertTrue(baseChar.isBaseChar(0x0641));
+        assertTrue(baseChar.isBaseChar(0x064A));
+        assertTrue(baseChar.isBaseChar(0x0671));
+        assertTrue(baseChar.isBaseChar(0x06B7));
+        assertFalse(baseChar.isBaseChar(0x06B8)); // gap
+        assertTrue(baseChar.isBaseChar(0x06BA));
+        assertTrue(baseChar.isBaseChar(0x06BE));
+        assertFalse(baseChar.isBaseChar(0x06BF)); // gap
+        assertTrue(baseChar.isBaseChar(0x06C0));
+        assertTrue(baseChar.isBaseChar(0x06CE));
+        assertFalse(baseChar.isBaseChar(0x06CF)); // gap
+        assertTrue(baseChar.isBaseChar(0x06D0));
+        assertTrue(baseChar.isBaseChar(0x06D3));
+        assertFalse(baseChar.isBaseChar(0x06D4)); // gap
+        assertTrue(baseChar.isBaseChar(0x06D5));
+        assertTrue(baseChar.isBaseChar(0x06E5));
+        assertTrue(baseChar.isBaseChar(0x06E6));
+        assertFalse(baseChar.isBaseChar(0x06E7)); // gap
+    }
+
+    @Test
+    void testIndicThaiLaoTibetanAndGaps() {
+        // Devanagari
+        assertTrue(baseChar.isBaseChar(0x0905));
+        assertTrue(baseChar.isBaseChar(0x0939));
+        assertFalse(baseChar.isBaseChar(0x093A)); // gap
+        assertTrue(baseChar.isBaseChar(0x093D));
+        assertTrue(baseChar.isBaseChar(0x0958));
+        assertTrue(baseChar.isBaseChar(0x0961));
+
+        // Bengali
+        assertTrue(baseChar.isBaseChar(0x0985));
+        assertTrue(baseChar.isBaseChar(0x09F1));
+
+        // Gujarati (subset)
+        assertTrue(baseChar.isBaseChar(0x0A05));
+        assertTrue(baseChar.isBaseChar(0x0A39));
+        assertTrue(baseChar.isBaseChar(0x0A5E));
+        assertTrue(baseChar.isBaseChar(0x0A72));
+        assertTrue(baseChar.isBaseChar(0x0A74));
+
+        // Oriya/Tamil samples
+        assertTrue(baseChar.isBaseChar(0x0B05));
+        assertTrue(baseChar.isBaseChar(0x0B61));
+        assertTrue(baseChar.isBaseChar(0x0BAE));
+        assertTrue(baseChar.isBaseChar(0x0BB9));
+
+        // Telugu/Kannada/Malayalam samples
+        assertTrue(baseChar.isBaseChar(0x0C05));
+        assertTrue(baseChar.isBaseChar(0x0C39));
+        assertTrue(baseChar.isBaseChar(0x0C60));
+        assertTrue(baseChar.isBaseChar(0x0C61));
+        assertTrue(baseChar.isBaseChar(0x0D05));
+        assertTrue(baseChar.isBaseChar(0x0D39));
+        assertTrue(baseChar.isBaseChar(0x0D60));
+        assertTrue(baseChar.isBaseChar(0x0D61));
+
+        // Thai/Lao/Tibetan
+        assertTrue(baseChar.isBaseChar(0x0E01));
+        assertTrue(baseChar.isBaseChar(0x0E2E));
+        assertFalse(baseChar.isBaseChar(0x0E2F)); // gap
+        assertTrue(baseChar.isBaseChar(0x0E30));
+        assertTrue(baseChar.isBaseChar(0x0E32));
+        assertTrue(baseChar.isBaseChar(0x0E33));
+        assertTrue(baseChar.isBaseChar(0x0E40));
+        assertTrue(baseChar.isBaseChar(0x0E45));
+        assertTrue(baseChar.isBaseChar(0x0E81));
+        assertTrue(baseChar.isBaseChar(0x0E82));
+        assertTrue(baseChar.isBaseChar(0x0E84));
+        assertTrue(baseChar.isBaseChar(0x0E87));
+        assertTrue(baseChar.isBaseChar(0x0E88));
+        assertTrue(baseChar.isBaseChar(0x0E8A));
+        assertTrue(baseChar.isBaseChar(0x0E8D));
+        assertTrue(baseChar.isBaseChar(0x0E94));
+        assertTrue(baseChar.isBaseChar(0x0E97));
+        assertTrue(baseChar.isBaseChar(0x0E99));
+        assertTrue(baseChar.isBaseChar(0x0E9F));
+        assertTrue(baseChar.isBaseChar(0x0EA1));
+        assertTrue(baseChar.isBaseChar(0x0EA3));
+        assertTrue(baseChar.isBaseChar(0x0EA5));
+        assertTrue(baseChar.isBaseChar(0x0EA7));
+        assertTrue(baseChar.isBaseChar(0x0EAA));
+        assertTrue(baseChar.isBaseChar(0x0EAB));
+        assertTrue(baseChar.isBaseChar(0x0EAD));
+        assertTrue(baseChar.isBaseChar(0x0EAE));
+        assertTrue(baseChar.isBaseChar(0x0EB0));
+        assertTrue(baseChar.isBaseChar(0x0EB2));
+        assertTrue(baseChar.isBaseChar(0x0EB3));
+        assertTrue(baseChar.isBaseChar(0x0EBD));
+        assertTrue(baseChar.isBaseChar(0x0EC0));
+        assertTrue(baseChar.isBaseChar(0x0EC4));
+
+        assertTrue(baseChar.isBaseChar(0x0F40));
+        assertTrue(baseChar.isBaseChar(0x0F47));
+        assertTrue(baseChar.isBaseChar(0x0F49));
+        assertTrue(baseChar.isBaseChar(0x0F69));
+    }
+
+    @Test
+    void testGeorgianAndHangulJamoSelections() {
+        // Georgian
+        assertTrue(baseChar.isBaseChar(0x10A0));
+        assertTrue(baseChar.isBaseChar(0x10C5));
+        assertTrue(baseChar.isBaseChar(0x10D0));
+        assertTrue(baseChar.isBaseChar(0x10F6));
+
+        // Hangul Jamo selective set
+        assertTrue(baseChar.isBaseChar(0x1100));
+        assertFalse(baseChar.isBaseChar(0x1101)); // not listed
+        assertTrue(baseChar.isBaseChar(0x1102));
+        assertTrue(baseChar.isBaseChar(0x1103));
+        assertFalse(baseChar.isBaseChar(0x1104)); // gap
+        assertTrue(baseChar.isBaseChar(0x1105));
+        assertTrue(baseChar.isBaseChar(0x1107));
+        assertFalse(baseChar.isBaseChar(0x1108)); // gap
+        assertTrue(baseChar.isBaseChar(0x1109));
+        assertFalse(baseChar.isBaseChar(0x110A)); // gap
+        assertTrue(baseChar.isBaseChar(0x110B));
+        assertTrue(baseChar.isBaseChar(0x110C));
+        assertFalse(baseChar.isBaseChar(0x110D)); // gap
+        assertTrue(baseChar.isBaseChar(0x110E));
+        assertTrue(baseChar.isBaseChar(0x1112));
+        assertTrue(baseChar.isBaseChar(0x113C));
+        assertFalse(baseChar.isBaseChar(0x113D)); // gap
+        assertTrue(baseChar.isBaseChar(0x113E));
+        assertTrue(baseChar.isBaseChar(0x1140));
+        assertTrue(baseChar.isBaseChar(0x114C));
+        assertTrue(baseChar.isBaseChar(0x114E));
+        assertTrue(baseChar.isBaseChar(0x1150));
+        assertTrue(baseChar.isBaseChar(0x1154));
+        assertTrue(baseChar.isBaseChar(0x1155));
+        assertTrue(baseChar.isBaseChar(0x1159));
+        assertTrue(baseChar.isBaseChar(0x115F));
+        assertTrue(baseChar.isBaseChar(0x1161));
+        assertTrue(baseChar.isBaseChar(0x1163));
+        assertTrue(baseChar.isBaseChar(0x1165));
+        assertTrue(baseChar.isBaseChar(0x1167));
+        assertTrue(baseChar.isBaseChar(0x1169));
+        assertTrue(baseChar.isBaseChar(0x116D));
+        assertTrue(baseChar.isBaseChar(0x116E));
+        assertTrue(baseChar.isBaseChar(0x1172));
+        assertTrue(baseChar.isBaseChar(0x1173));
+        assertTrue(baseChar.isBaseChar(0x1175));
+        assertTrue(baseChar.isBaseChar(0x119E));
+        assertTrue(baseChar.isBaseChar(0x11A8));
+        assertTrue(baseChar.isBaseChar(0x11AB));
+        assertTrue(baseChar.isBaseChar(0x11AE));
+        assertTrue(baseChar.isBaseChar(0x11AF));
+        assertTrue(baseChar.isBaseChar(0x11B7));
+        assertTrue(baseChar.isBaseChar(0x11B8));
+        assertTrue(baseChar.isBaseChar(0x11BA));
+        assertTrue(baseChar.isBaseChar(0x11BC));
+        assertTrue(baseChar.isBaseChar(0x11C2));
+        assertTrue(baseChar.isBaseChar(0x11EB));
+        assertTrue(baseChar.isBaseChar(0x11F0));
+        assertTrue(baseChar.isBaseChar(0x11F9));
+    }
+
+    @Test
+    void testGreekExtendedAndOtherLateSingletons() {
+        assertTrue(baseChar.isBaseChar(0x1F00));
+        assertTrue(baseChar.isBaseChar(0x1F15));
+        assertTrue(baseChar.isBaseChar(0x1FBE)); // singleton
+        assertFalse(baseChar.isBaseChar(0x1FBD)); // gap near singleton
+        assertTrue(baseChar.isBaseChar(0x1FF6));
+        assertTrue(baseChar.isBaseChar(0x1FFC));
+
+        assertTrue(baseChar.isBaseChar(0x2126)); // Ohm sign
+        assertTrue(baseChar.isBaseChar(0x212A)); // Kelvin sign
+        assertTrue(baseChar.isBaseChar(0x212B)); // Angstrom sign
+        assertFalse(baseChar.isBaseChar(0x212C)); // gap after 212B
+        assertTrue(baseChar.isBaseChar(0x212E)); // estimated symbol
+
+        assertTrue(baseChar.isBaseChar(0x2180));
+        assertTrue(baseChar.isBaseChar(0x2182));
+        assertFalse(baseChar.isBaseChar(0x2183)); // gap after 2182
+    }
+
+    @Test
+    void testHiraganaKatakanaBopomofoHangulSyllablesAndGaps() {
+        // Hiragana
+        assertTrue(baseChar.isBaseChar(0x3041));
+        assertTrue(baseChar.isBaseChar(0x3094));
+        assertFalse(baseChar.isBaseChar(0x3095)); // gap
+
+        // Katakana
+        assertTrue(baseChar.isBaseChar(0x30A1));
+        assertTrue(baseChar.isBaseChar(0x30FA));
+        assertFalse(baseChar.isBaseChar(0x30FB)); // gap
+
+        // Bopomofo
+        assertTrue(baseChar.isBaseChar(0x3105));
+        assertTrue(baseChar.isBaseChar(0x312C));
+        assertFalse(baseChar.isBaseChar(0x312D)); // gap
+
+        // Hangul syllables
+        assertTrue(baseChar.isBaseChar(0xAC00));
+        assertTrue(baseChar.isBaseChar(0xD7A3));
+        assertFalse(baseChar.isBaseChar(0xD7A4)); // just above upper bound
+    }
+
+    @Test
+    void testOutOfAllRanges() {
+        assertFalse(baseChar.isBaseChar(0x0000));
+        assertFalse(baseChar.isBaseChar(-1));
+    }
+
+    @Test
+    void testGroupBoundaryTransitions() {
+        // First group's left condition false (above 0xFF), second group's left condition true
+        assertTrue(baseChar.isBaseChar(0x0100));
+
+        // Second group's left condition false (above 0x1F5), third group's left condition true
+        assertTrue(baseChar.isBaseChar(0x01FA));
+
+        // Third group's left condition false (above 0x2FF), Greek group's left condition true
+        assertTrue(baseChar.isBaseChar(0x0386));
+    }
+}",1,9223372036854775807,34,86.01,13,13,0
+"public class ValidateProtocolFrame {
+    public static int validateProtocolFrame(long frame, int expectedType,
+                                                 int maxPayload, boolean strictMode,
+                                                 int retryCount) {
+            if (frame == 0L || maxPayload <= 0) {               // +1 +1(||) = 2
+                return -1;
+            }
+            if (expectedType < 0 || expectedType > 255) {       // +1 +1(||) = 2
+                return -2;
+            }
+
+            int msgType    = (int)(frame & 0xFFL);
+            int version    = (int)((frame >>  8) & 0xFL);
+            int payloadLen = (int)((frame >> 12) & 0xFFFFL);
+            int checksum   = (int)((frame >> 28) & 0xFFFFL);
+            int flags      = (int)((frame >> 44) & 0xFFFFL);
+            int status     = 0;
+
+            for (int i = 0; i < retryCount; i++) {              // +1
+                if (msgType == expectedType) {                   // +2 [n=1]
+                    if (version >= 1 && version <= 15) {        // +3 +1(&&) = 4 [n=2]
+                        if (payloadLen <= maxPayload) {          // +4 [n=3]
+                            int computed = (payloadLen * version) & 0xFFFF;
+                            if (checksum == computed) {          // +5 [n=4]
+                                status |= (1 << i);
+                            } else {                             // +1
+                                if ((flags & 0x3) != 0) {       // +5 [n=4]
+                                    status |= (0x10 << i);
+                                }
+                            }
+                        } else {                                 // +1
+                            status |= 0x100;
+                        }
+                    } else {                                     // +1
+                        status |= 0x200;
+                    }
+                } else {                                         // +1
+                    status |= 0x400;
+                }
+
+                int j = 0;
+                while (j < 8) {                                  // +2 [n=1]
+                    if (((frame >> j) & 1L) != 0L               // +3 [n=2]
+                            && status < maxPayload) {            // +1(&&)
+                        status ^= (1 << j);
+                    }
+                    j++;
+                }
+            }
+
+            if (status > 0 && strictMode) {                     // +1 +1(&&) = 2 [n=0]
+                if (retryCount > 2) {                            // +2 [n=1]
+                    return status | 0x8000;
+                }
+            }
+
+            return status;
+        }
+}","import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.jupiter.api.Test;
+
+public class ValidateProtocolFrameTest {
+
+    private final ValidateProtocolFrame frameValidator = new ValidateProtocolFrame();
+
+    private static long buildFrame(int msgType, int version, int payloadLen, int checksum, int flags) {
+        long f = 0L;
+        f |= (long) (msgType & 0xFF);
+        f |= ((long) (version & 0xF)) << 8;
+        f |= ((long) (payloadLen & 0xFFFF)) << 12;
+        f |= ((long) (checksum & 0xFFFF)) << 28;
+        f |= ((long) (flags & 0xFFFF)) << 44;
+        return f;
+    }
+
+    @Test
+    void testEarlyReturn_FrameZero() {
+        long frame = 0L;
+        int result = frameValidator.validateProtocolFrame(frame, 1, 10, false, 1);
+        assertEquals(-1, result);
+    }
+
+    @Test
+    void testEarlyReturn_MaxPayloadNonPositive() {
+        long frame = buildFrame(0, 1, 1, 1, 0);
+        int result = frameValidator.validateProtocolFrame(frame, 1, 0, false, 1);
+        assertEquals(-1, result);
+    }
+
+    @Test
+    void testEarlyReturn_ExpectedTypeNegative() {
+        long frame = buildFrame(0, 1, 1, 1, 0);
+        int result = frameValidator.validateProtocolFrame(frame, -1, 10, false, 1);
+        assertEquals(-2, result);
+    }
+
+    @Test
+    void testEarlyReturn_ExpectedTypeTooLarge() {
+        long frame = buildFrame(0, 1, 1, 1, 0);
+        int result = frameValidator.validateProtocolFrame(frame, 300, 10, false, 1);
+        assertEquals(-2, result);
+    }
+
+    @Test
+    void testZeroRetry_NoIterations_StatusZero() {
+        int version = 3, payload = 10, expected = 0;
+        int checksum = (payload * version) & 0xFFFF;
+        long frame = buildFrame(expected, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, true, 0);
+        assertEquals(0, result);
+    }
+
+    @Test
+    void testValidFrame_NoToggle_SingleRetry() {
+        int version = 3, payload = 10, expected = 0;
+        int checksum = (payload * version) & 0xFFFF; // 30
+        long frame = buildFrame(expected, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 1);
+        assertEquals(1, result);
+    }
+
+    @Test
+    void testValidFrame_StrictMode_RetryGtTwo() {
+        int version = 3, payload = 10, expected = 0;
+        int checksum = (payload * version) & 0xFFFF; // 30
+        long frame = buildFrame(expected, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, true, 3);
+        assertEquals(0x8000 | 0x7, result);
+    }
+
+    @Test
+    void testValidFrame_StrictMode_RetryLeTwo() {
+        int version = 3, payload = 10, expected = 0;
+        int checksum = (payload * version) & 0xFFFF; // 30
+        long frame = buildFrame(expected, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, true, 2);
+        assertEquals(0x3, result);
+    }
+
+    @Test
+    void testChecksumMismatch_WithFlagsSetsPenalty_MultipleRetries() {
+        int version = 3, payload = 10, expected = 0;
+        int wrongChecksum = 0;
+        long frame = buildFrame(expected, version, payload, wrongChecksum, 0x3);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 2);
+        assertEquals(0x10 | 0x20, result);
+    }
+
+    @Test
+    void testChecksumMismatch_WithZeroFlags_NoPenalty() {
+        int version = 3, payload = 10, expected = 0;
+        int wrongChecksum = 0;
+        long frame = buildFrame(expected, version, payload, wrongChecksum, 0x0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, true, 1);
+        assertEquals(0, result);
+    }
+
+    @Test
+    void testPayloadLenExceedsMax() {
+        int version = 2, payload = 200, expected = 0;
+        int checksum = (payload * version) & 0xFFFF;
+        long frame = buildFrame(expected, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 1);
+        assertEquals(0x100, result);
+    }
+
+    @Test
+    void testInvalidVersion_Zero() {
+        int version = 0, payload = 10, expected = 0;
+        long frame = buildFrame(expected, version, payload, 0, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 1);
+        assertEquals(0x200, result);
+    }
+
+    @Test
+    void testInvalidVersion_GreaterThanMax() {
+        int version = 16, payload = 10, expected = 0;
+        long frame = buildFrame(expected, version, payload, 0, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 1);
+        assertEquals(0x200, result);
+    }
+
+    @Test
+    void testMsgTypeMismatch_WhileRightConditionFalse() {
+        int msgType = 1, expected = 2, version = 3, payload = 10;
+        int checksum = (payload * version) & 0xFFFF;
+        long frame = buildFrame(msgType, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 1, false, 1);
+        assertEquals(0x400, result);
+    }
+
+    @Test
+    void testValidFrame_WithToggleInWhile() {
+        int msgType = 1, expected = 1, version = 3, payload = 10;
+        int checksum = (payload * version) & 0xFFFF;
+        long frame = buildFrame(msgType, version, payload, checksum, 0);
+        int result = frameValidator.validateProtocolFrame(frame, expected, 100, false, 1);
+        assertEquals(0, result);
+    }
+}",18,120,40,97.06,15,15,0
+"public class AnalyzeOrbitalStability {
+    public static double analyzeOrbitalStability(double mass, double velocity,
+                                                      double altitude, double eccentricity,
+                                                      int iterations) {
+            if (mass <= 0.0 || velocity <= 0.0) {                  // +1, +1(||) = 2
+                return -1.0;
+            }
+
+            double stability = 0.0;
+            double gravParam = 3.986e14;
+            int stableCount = 0;
+
+            for (int i = 0; i < iterations; i++) {                 // +1  [n=0]
+                double radius = altitude + 6.371e6 + (i * 1000.0);
+                double orbitalSpeed = Math.sqrt(gravParam / radius);
+
+                if (velocity > orbitalSpeed * 0.85                 // +2  [n=1]
+                        && velocity < orbitalSpeed * 1.15) {       // +1(&&)
+                    if (eccentricity >= 0.0                        // +3  [n=2]
+                            && eccentricity < 1.0) {               // +1(&&)
+                        if (altitude > 160000.0) {                 // +4  [n=3]
+                            stableCount++;
+                            double keplerEnergy = (velocity * velocity / 2.0)
+                                    - (gravParam / radius);
+                            if (keplerEnergy < 0.0) {              // +5  [n=4]
+                                stability += Math.abs(keplerEnergy)
+                                        * (1.0 - eccentricity);
+                            } else {                               // +1
+                                stability -= keplerEnergy * 0.5;
+                            }
+                        }
+                    }
+                }
+
+                if (i > 0 && stableCount > 0) {                   // +2  [n=1], +1(&&)
+                    double factor = Math.pow(1.0 + eccentricity * 0.01, i);
+                    if (factor >= 1.0) {                           // +3  [n=2]
+                        stability *= factor;
+                        if (mass > 2000.0 && eccentricity < 0.3) { // +4  [n=3], +1(&&)
+                            stability += orbitalSpeed * 0.0001 * mass;
+                        }
+                    }
+                }
+
+                if (altitude < 200000.0 || velocity < 7800.0) {   // +2  [n=1], +1(||)
+                    if (eccentricity > 0.1) {                      // +3  [n=2]
+                        stability -= mass * eccentricity * 1e-15;
+                    }
+                }
+            }
+
+            if (stableCount > iterations / 2) {                    // +1  [n=0]
+                return stability / stableCount;
+            }
+
+            return stability;
+        }
+}","import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+public class AnalyzeOrbitalStabilityTest {
+
+    private final AnalyzeOrbitalStability analyzer = new AnalyzeOrbitalStability();
+
+    @Test
+    void earlyReturnWhenMassNonPositive() {
+        double result = analyzer.analyzeOrbitalStability(0.0, 7500.0, 300000.0, 0.1, 5);
+        assertEquals(-1.0, result, 0.0);
+    }
+
+    @Test
+    void earlyReturnWhenVelocityNonPositive() {
+        double result = analyzer.analyzeOrbitalStability(1000.0, 0.0, 300000.0, 0.1, 5);
+        assertEquals(-1.0, result, 0.0);
+    }
+
+    @Test
+    void zeroIterationsReturnsZero() {
+        double result = analyzer.analyzeOrbitalStability(1000.0, 7800.0, 300000.0, 0.05, 0);
+        assertEquals(0.0, result, 0.0);
+    }
+
+    @Test
+    void singleIterationStableHighAltitudeNoPenaltyReturnsAverage() {
+        double mass = 3000.0;
+        double velocity = 7850.0;
+        double altitude = 300000.0;
+        double eccentricity = 0.05;
+        int iterations = 1;
+
+        double result = analyzer.analyzeOrbitalStability(mass, velocity, altitude, eccentricity, iterations);
+
+        double gravParam = 3.986e14;
+        double radius = altitude + 6.371e6;
+        double keplerEnergy = (velocity * velocity / 2.0) - (gravParam / radius);
+        double expected = Math.abs(keplerEnergy) * (1.0 - eccentricity);
+        double tol = Math.abs(expected) * 1e-12 + 1e-9;
+
+        assertEquals(expected, result, tol);
+    }
+
+    @Test
+    void singleIterationAltitudeLowTriggersPenaltyAndNoStableCount() {
+        double mass = 5000.0;
+        double velocity = 7900.0; // within band, ensure penalty due to altitude
+        double altitude = 150000.0; // <= 160000 blocks stableCount
+        double eccentricity = 0.5; // triggers penalty in final block
+        int iterations = 1;
+
+        double result = analyzer.analyzeOrbitalStability(mass, velocity, altitude, eccentricity, iterations);
+
+        double expected = -mass * eccentricity * 1e-15;
+        double tol = Math.abs(expected) * 1e-12 + 1e-18;
+        assertEquals(expected, result, tol);
+    }
+
+    @Test
+    void velocityOutsideBandWithLowEccentricityNoPenalty() {
+        double mass = 1200.0;
+        double velocity = 7600.0; // < 7800 triggers outer OR but fails band check
+        double altitude = 300000.0; // high to ensure OR is true only due to velocity
+        double eccentricity = 0.05; // no penalty inside OR
+        int iterations = 1;
+
+        double result = analyzer.analyzeOrbitalStability(mass, velocity, altitude, eccentricity, iterations);
+        assertEquals(0.0, result, 0.0);
+    }
+
+    @Test
+    void multipleIterationsStableMassBonusAppliedWhenIgt0() {
+        double altitude = 300000.0;
+        double velocity = 7800.0; // within band across small radius changes
+        double eccentricity = 0.2; // < 0.3 to allow bonus
+        int iterations = 3;
+
+        double lowMass = 1000.0;   // no bonus
+        double highMass = 3000.0;  // bonus applied when i > 0
+
+        double resultLowMass = analyzer.analyzeOrbitalStability(lowMass, velocity, altitude, eccentricity, iterations);
+        double resultHighMass = analyzer.analyzeOrbitalStability(highMass, velocity, altitude, eccentricity, iterations);
+
+        assertTrue(resultHighMass > resultLowMass, ""High mass should yield higher stability due to bonus term"");
+        assertTrue(resultHighMass > 0.0);
+        assertTrue(resultLowMass > 0.0);
+    }
+
+    @Test
+    void multipleIterationsNoStableCountSkipsIgt0BlockAndReturnsZero() {
+        double mass = 1500.0;
+        double velocity = 9500.0;   // outside 1.15 band to avoid stableCount
+        double altitude = 300000.0; // high; also ensures outer OR false for altitude
+        double eccentricity = 1.2;  // invalid for stability block
+        int iterations = 3;
+
+        double result = analyzer.analyzeOrbitalStability(mass, velocity, altitude, eccentricity, iterations);
+        assertEquals(0.0, result, 0.0);
+    }
+}",19,424,38,83.33,8,7,1
+"public class ComputeRiskScore {
+    public static long computeRiskScore(int creditScore, double annualRate,
+                                            long loanAmount, int termMonths,
+                                            int missedPayments, boolean secured) {
+            if (creditScore < 300 || creditScore > 850) {       // +1 +1(||) = 2
+                return -1L;
+            }
+            if (loanAmount <= 0L || termMonths <= 0 || annualRate < 0.0) { // +1 +1(||) +1(||) = 3
+                return -2L;
+            }
+
+            long riskScore = 0L;
+            double monthlyRate = annualRate / 12.0;
+
+            for (int month = 1; month <= termMonths; month++) { // +1
+                double balance = loanAmount
+                        * Math.pow(1.0 + monthlyRate, month);
+                double safeDivisor = 1.0 - Math.pow(1.0 + monthlyRate, -termMonths);
+                double payment = (loanAmount * (monthlyRate + 1e-12)) / (safeDivisor + 1e-12);
+
+                if (creditScore >= 750) {                       // +2 [n=1]
+                    if (missedPayments == 0 && secured) {       // +3 +1(&&) = 4 [n=2]
+                        riskScore += (long)(payment * 0.005);
+                    } else {                                     // +1
+                        if (missedPayments > 3) {               // +4 [n=3]
+                            riskScore += (long)(balance * 0.002 * missedPayments);
+                        } else {                                 // +1
+                            if (secured && balance > 500000.0) { // +5 +1(&&) = 6 [n=4]
+                                riskScore += (long)(balance * 0.001);
+                            }
+                        }
+                    }
+                } else {                                        // +1
+                    if (missedPayments > 0                      // +3 [n=2]
+                            && balance > 100000.0) {            // +1(&&)
+                        if (annualRate > 0.15                   // +4 [n=3]
+                                || missedPayments > 5) {        // +1(||)
+                            riskScore += (long)(balance * 0.003 * missedPayments);
+                        } else {                                 // +1
+                            riskScore += (long)(payment * 0.01 * missedPayments);
+                        }
+                    }
+                }
+            }
+
+            if (riskScore < 0L) {                               // +1
+                return 0L;
+            } else if (riskScore == 0L && missedPayments > 0) { // +1
+                return 1L;
+            }
+
+            return riskScore;
+        }
+}","import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ComputeRiskScoreTest {
+
+    private final ComputeRiskScore riskCalculator = new ComputeRiskScore();
+
+    @Test
+    void testInvalidCreditScoreLow_returnsMinus1() {
+        long result = riskCalculator.computeRiskScore(299, 0.10, 1000L, 12, 0, false);
+        assertEquals(-1L, result);
+    }
+
+    @Test
+    void testInvalidCreditScoreHigh_returnsMinus1() {
+        long result = riskCalculator.computeRiskScore(900, 0.05, 5000L, 24, 1, true);
+        assertEquals(-1L, result);
+    }
+
+    @Test
+    void testInvalidLoanAmountZero_returnsMinus2() {
+        long result = riskCalculator.computeRiskScore(700, 0.05, 0L, 12, 0, false);
+        assertEquals(-2L, result);
+    }
+
+    @Test
+    void testInvalidTermMonthsZero_returnsMinus2() {
+        long result = riskCalculator.computeRiskScore(700, 0.00, 1000L, 0, 1, false);
+        assertEquals(-2L, result);
+    }
+
+    @Test
+    void testInvalidAnnualRateNegative_returnsMinus2() {
+        long result = riskCalculator.computeRiskScore(700, -0.01, 1000L, 12, 0, false);
+        assertEquals(-2L, result);
+    }
+
+    @Test
+    void testHighCredit_noMissed_secured_oneMonth() {
+        long result = riskCalculator.computeRiskScore(800, 0.00, 100000L, 1, 0, true);
+        assertEquals(500L, result);
+    }
+
+    @Test
+    void testHighCredit_missedPaymentsGreaterThan3_multipleMonths() {
+        long result = riskCalculator.computeRiskScore(780, 0.00, 200000L, 2, 4, false);
+        assertEquals(3200L, result);
+    }
+
+    @Test
+    void testHighCredit_missedPaymentsBetween1And3_securedAndLargeBalance() {
+        long result = riskCalculator.computeRiskScore(760, 0.00, 600000L, 3, 2, true);
+        assertEquals(1800L, result);
+    }
+
+    @Test
+    void testHighCredit_missedPaymentsPositive_notSecured_smallBalance_returns1() {
+        long result = riskCalculator.computeRiskScore(790, 0.00, 400000L, 2, 1, false);
+        assertEquals(1L, result);
+    }
+
+    @Test
+    void testLowCredit_conditionTrue_leftSideOfOr_annualRateHigh() {
+        long result = riskCalculator.computeRiskScore(700, 0.24, 123456L, 1, 1, false);
+        assertEquals(377L, result);
+    }
+
+    @Test
+    void testLowCredit_conditionTrue_rightSideOfOr_missedPaymentsHigh() {
+        long result = riskCalculator.computeRiskScore(700, 0.00, 200000L, 1, 6, false);
+        assertEquals(3600L, result);
+    }
+
+    @Test
+    void testLowCredit_conditionTrue_elseBranch_usesPaymentTimesMissed_multipleMonths() {
+        long result = riskCalculator.computeRiskScore(700, 0.00, 150001L, 2, 2, false);
+        assertEquals(6000L, result);
+    }
+
+    @Test
+    void testLowCredit_conditionFalse_dueToZeroMissedPayments_returns0() {
+        long result = riskCalculator.computeRiskScore(650, 0.00, 50000L, 3, 0, false);
+        assertEquals(0L, result);
+    }
+
+    @Test
+    void testLowCredit_conditionFalse_dueToSmallBalance_returns1() {
+        long result = riskCalculator.computeRiskScore(700, 0.00, 95000L, 2, 2, false);
+        assertEquals(1L, result);
+    }
+}",20,65,37,92.11,14,14,0
